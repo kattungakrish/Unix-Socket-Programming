@@ -1,16 +1,13 @@
-Term Project Part 3
-Due date: Apr 29th, 2021
+Term Project: EE 450- Introduction to Computer Networks.
+University of Southern California, Los Angeles, CA
 --------------------------------------------------------------------------------
 Full Name: Krishi Satya Sai Kattunga
-USC ID: 2749437362
 --------------------------------------------------------------------------------
 *MY WORK:
 
-This part of the project, sums up the previous term project parts 1 and 2 to implement
-a simple application of generating customized recommendations based on user queries.
-More specifically, this part uses socket programming to implement a client-server
+This project uses unix socket programming to implement a client-server
 model system, with 3 servers (A main server, 2 backend servers A and B) and
-possibly more than 1 client. This client-server model is capable of supporting
+2 and possibly more clients. This client-server model is capable of supporting
 the implementation of a  simple application where, 1 or more clients ask the main server
 for recommending possible friends of a user (denoted by their user ID) in a
 particular country. The main server itself doesn't has this information stored directly
