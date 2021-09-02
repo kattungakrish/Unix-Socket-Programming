@@ -1,0 +1,220 @@
+Term Project Part 3
+Due date: Apr 29th, 2021
+--------------------------------------------------------------------------------
+Full Name: Krishi Satya Sai Kattunga
+USC ID: 2749437362
+--------------------------------------------------------------------------------
+*MY WORK:
+
+This part of the project, sums up the previous term project parts 1 and 2 to implement
+a simple application of generating customized recommendations based on user queries.
+More specifically, this part uses socket programming to implement a client-server
+model system, with 3 servers (A main server, 2 backend servers A and B) and
+possibly more than 1 client. This client-server model is capable of supporting
+the implementation of a  simple application where, 1 or more clients ask the main server
+for recommending possible friends of a user (denoted by their user ID) in a
+particular country. The main server itself doesn't has this information stored directly
+but instead, it knows which backend server to contact regarding this information and does so.
+If the respective backend servers have the required information, they reply with
+their recommendations to the main server which then passes on this information
+as its recommendations to the client for all possible friends of the queried user
+ID in that particular country.
+
+The clients communicate with the main server using TCP thus maintaining a TCP
+connection for the whole duration of their communication, whereas the communications
+between the main server and either of the backend servers is implemented using UDP.
+
+That is,
+Client(s) <----> Main server : TCP
+* One or more clients can be simultaneously connected to the main server, which
+  can handle multiple requests from each of the clients at a time.
+
+* While the main server handles client requests it still keeps listening on its
+  assigned static TCP PORT for any further incoming client connections for it to handle.
+
+Main server <----> Backend servers: UDP
+* Backend Servers must be running before running the main server.
+* Once the main server is up and running it lets the backend servers (already running)
+  know that it is "ON". The backend servers then reply with a list of countries
+  handled by each of them respectively for the main server's book keeping purpose.
+
+IP ADDRESS FAMILY: IPv4
+
+IP ADDRESSES: All client and the 3 server IP addresses are set to local host
+(127.0.0.1). As they are all hosted on the same device.
+
+PORTS:
+* Ports used for Client and Main server communications are TCP ports.
+    1) Main server : TCP PORT NO.= "33362".
+    2) Client(s) : TCP PORT NO. is dynamically assigned, whenever they make a
+                   new connection to the main server.
+* Ports used for Main server and Backend servers communications are UDP ports.
+    1) Main server: UDP PORT NO. = "32362".
+    2) Backend Server A: UDP PORT NO. = "30362".
+    3) Backend server B: UDP PORT NO. = "31362".
+--------------------------------------------------------------------------------
+*MY CODES:
+
+NOTE: I have programmed my codes in C++ (.cpp).
+All the socket libraries required by the project have been included.
+The socket libraries are common for C and C++. I have also included C standard
+libraries to handle char buffers and just in case if needed.
+certain standard C libraries have been named as c<C library name> for their
+compatibility with C++ (Ex: <cstdio> for <stdio.h>).
+--------------------------------------------------------------------------------
+1.) servermain.cpp
+
+This program hosts the main server upon execution. It executes in 2 stages:
+
+1) Bootup
+* Here the main server sets up its sockets, it informs both the backend servers
+  A and B (already running) that it is "ON".
+* The main server then receives a response from both of the backend servers,
+  with a list of all countries handled by them respectively. The main server
+  stores this list in a map, mapping the backend Servers A and B to the respective
+  countries handled by them.
+* Once this map is constructed the main server bootup is complete and it is all
+  set to listen on its TCP port for any incoming connections from the clients.
+
+2) Client Query handling and Response to client
+* Here, the main server receives the query from the clients. It acknowledges that
+  the client query consists of a country name and user id. It reads the country name
+  from this, after which there are 2 possible scenarios:
+
+  a) Queried country name is neither handled by backend server A or B.
+  The program will let the client know of this, by responding with an appropriate
+   response to the client's query.
+
+  b) Queried country name was found to be handled by either backend server A or B.
+  The main server program then passes on the client's query (with country name and
+  user id) to the respective backend server (A or B) using UDP and waits for its
+  response. After receiving this response, it passes this on to the respective
+  client, as the main server's response to that client's query.
+
+NOTE: When a client program terminates. The main server acknowledges that a particular
+client has disconnected and displays this on the main server screen.
+
+NOTE: In this code the function sigchld_handler and the corresponding code segment that
+calls this function to handle zombie processes have been directly referenced from
+the beej's guide.
+
+Libraries included: All C++ standard libraries, All socket libraries (as required),
+<vector>, <map>, <iterator>, C standard libraries in format compatible with C++, <signal.h>
+--------------------------------------------------------------------------------
+2.) client.cpp
+This program hosts a client upon execution. It executes in 3 stages:
+1) Bootup
+* Here the client program upon execution, connects to the
+  main server listening on the port 33362. After being successfully connected to the
+  main server, the program asks the user to enter a country name followed by a user id
+  for its query.
+
+2) Query to Main Server
+* Once the user enters their query. The client program sends this to the main server
+  as a request to respond back with recommendations of user ids of people in the
+  queried country that can be possible friends for the person with the queried user id,
+  based on data of matching interest.
+
+NOTE: To the client it might seem that the main server has direct access to such data,
+but in-fact the main server extracts this required data from other backend servers that
+host such data.
+
+3) Receiving Main Server response
+* Here the clients simply receive the main server's response to their query
+  previously sent and displays it on  the respective clients' screen. After this,
+  the client asks the user to start a new query.
+
+NOTE: When the main server program terminates on its end. If a client, now
+sends a query to the now terminated main server, it acknowledges this, closes its
+socket file descriptor and terminates the client program itself.
+
+Libraries included: All C++ standard libraries, All socket libraries (as required),
+<vector>,<iterator>, C standard libraries in format compatible with C++, <signal.h>
+--------------------------------------------------------------------------------
+3.) serverA.cpp
+This program hosts the backend server A upon execution. It executes in 2 stages:
+1) Bootup
+* The backend server A boots up. It will first read the 'dataA.txt' file and store the
+  data from it in its own data set. This data set has been implemented using a 2
+  Dimensional map, which maps the countries handled by backend server A to various
+  interest groups, which themselves are maps storing a map of various interest group
+  numbers to a vector of users ID's belonging to that particular interest group number.
+
+* Then, it waits until the main server is up and running, after which it will
+  send a list of all the countries (only) it handles, to the main server.
+
+2) Main Server Query handling and Reply
+* It receives the main server query of a country name (hosted by backend server A)
+  and a user id. It searches for the queried user id corresponding to the queried
+  country name in its 2D Map. After this there can be 2 scenarios:
+
+  a) Queried user id cannot be found in its data set.
+     The program creates an appropriate response to let the main server
+     know of this scenario.
+
+  b) Queried user id is found in the data set.
+     It makes note of all the interest groups in which the user id
+     was found and constructs a vector of all the user ids (non repeating) in those
+     interest groups (except queried user id of course) designating, the user ids in this
+     vector are possible friends of the queried user id. It then, sends these user ids as a
+     response to the main server's query.
+
+ Libraries included: All C++ standard libraries, All socket libraries (as required),
+ <vector>, <map>, <iterator>, C standard libraries in format compatible with C++, <signal.h>
+--------------------------------------------------------------------------------
+4.) serverB.cpp
+Backend Server B follows the exactly same 2 stages as that of the Backend Server A.
+The only difference being that it hosts a completely different set of countries and user ids
+,as it reads from a different file, 'dataB.txt'.
+
+Libraries included: All C++ standard libraries, All socket libraries (as required),
+<vector>, <map>, <iterator>, C standard libraries in format compatible with C++, <signal.h>
+--------------------------------------------------------------------------------
+*FORMAT OF MESSAGES EXCHANGED:
+
+1) Client<---> Main Server (TCP):
+  a) Client Query to Main Server:
+  This is the country name and user ID query from client to main server.
+  b) Main Server Response to Client:
+    * Appropriate response when 'Country name not found'.
+    * Appropriate response when Country name found, but 'User ID Not found'.
+    * Appropriate response consisting of user ids of all possible friends
+      of the queried user id in the queried country.
+
+Format: These messages are stored and exchanged as respective char buffers.
+
+2) Main Server<----->Backend Servers(A or B):
+a) Main Server to Backend Servers(A or B):
+  * Main server status message :
+    To let the backend servers know that main server is "ON"
+  * Main server query(Country name and user id) :
+    If client queried country name is found to be handled by any one of the
+    backend servers, pass the client query to the respective backend server
+
+b)Backend Servers(A or B) to Main Server:
+  * Number and List of countries: Once main server is up and running, both the backend servers,
+    send the no. and list of countries they host respectively for the use of the Main server.
+  * Appropriate response to Main server query when queried User ID is not found.
+  * Appropriate response to Main server query consisting of user ids of all possible friends
+    of the queried user id in the queried country
+
+Format: These messages are also stored and exchanged as char buffers.
+
+NOTE: For convenience, very often char buffers were translated to and from C++ string type variables,
+for easier handling and manipulation of data.
+--------------------------------------------------------------------------------
+*REUSED CODE:
+In all 3 server codes (servermain.cpp, serverA.cpp, serverB.cpp):
+I have reused a small code segment from beej's for handling zombie processes as
+mentioned in the code comments.
+I have also reused setsockopt() function to be able to reuse ports and avoid any
+runtime errors.
+Everything else is my own work.
+--------------------------------------------------------------------------------
+NOTE:
+If a filename other than 'dataA.txt' (for serverA.cpp) or 'dataB.txt' (for serverB.cpp)
+is used, the backend servers fails to read the file and deliver an appropriate message.
+Incase a different filename (only name) needs to be used, it needs to be updated
+in the respective code.
+Apart from this small thing, no other case found where the codes fail
+to execute as intended or explained above.
