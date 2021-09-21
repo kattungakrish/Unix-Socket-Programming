@@ -10,9 +10,9 @@ model system, with 3 servers (A main server, 2 backend servers A and B) and
 2 and possibly more clients. This client-server model is capable of supporting
 the implementation of a  simple application where, 1 or more clients ask the main server
 for recommending possible friends of a user (denoted by their user ID) in a
-particular country. The main server itself doesn't has this information stored directly
-but instead, it knows which backend server to contact regarding this information and does so.
-If the respective backend servers have the required information, they reply with
+particular country. The main server itself doesn't have this information stored directly
+but instead, it knows which backend server to contact for it does so.
+If the respective backend server has the required information, they reply with
 their recommendations to the main server which then passes on this information
 as its recommendations to the client for all possible friends of the queried user
 ID in that particular country.
@@ -24,7 +24,11 @@ between the main server and either of the backend servers is implemented using U
 That is,
 Client(s) <----> Main server : TCP
 * One or more clients can be simultaneously connected to the main server, which
-  can handle multiple requests from each of the clients at a time.
+  can handle multiple requests from each of the clients at a time. 
+  Each connection from the a client to the main server is implementing by creating a new
+  child process using the fork() system call, everytime a new client connects via TCP
+  to the main server. Hence, note that the concurrency in handling requests from multiple
+  clients at the same time, is achieved via multi-processing.
 
 * While the main server handles client requests it still keeps listening on its
   assigned static TCP PORT for any further incoming client connections for it to handle.
@@ -37,7 +41,7 @@ Main server <----> Backend servers: UDP
 
 IP ADDRESS FAMILY: IPv4
 
-IP ADDRESSES: All client and the 3 server IP addresses are set to local host
+IP ADDRESSES: For the purpose of this project, all client and the 3 server IP addresses are set to local host
 (127.0.0.1). As they are all hosted on the same device.
 
 PORTS:
