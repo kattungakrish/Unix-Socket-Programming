@@ -219,3 +219,10 @@ Incase a different filename (only name) needs to be used, it needs to be updated
 in the respective code.
 Apart from this small thing, no other case found where the codes fail
 to execute as intended or explained above.
+--------------------------------------------------------------------------------
+
+POSSIBLE EXTENTIONS TO THE PROJECT:
+(1) Implement concurrency with respect to handling multiple client requests from multiple clients using 
+    multi-threading purely (or maybe a hybrid of multi-processing and multi-threading).
+(2) Develop the server codes to act as web server that is able to service HTTP requests. Thereby implementing
+    a multi-threaded web server.
